@@ -8,6 +8,8 @@ RUN set -x \
   && ( \
        echo '<VirtualHost *:80>'; \
        echo '  ServerName my-docker-hub'; \
+       echo '  Header set Host "my-docker-hub"'; \
+       echo '  RequestHeader set X-Forwarded-proto "http"'; \
        echo '  ProxyPass / http://my-docker-hub:5000/'; \
        echo '  ProxyPassReverse / http://my-docker-hub:5000/'; \
        echo '</VirtualHost>'; \
