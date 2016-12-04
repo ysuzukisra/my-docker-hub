@@ -1,0 +1,17 @@
+FROM rgoyard/apache-proxy
+
+RUN set -x \
+  && ( \
+       echo 'NameVirtualHost *:80'; \
+       echo '#NameVirtualHost *:443'; \
+     ) > /etc/apache2/conf.d/00.rproxy.default \
+  && ( \
+       echo '<VirtualHost *:80>'; \
+       echo '  ServerName my-docker-hub'; \
+       echo '  ProxyPass / http://my-docker-hub:5000/'; \
+       echo '  ProxyPassReverse / http://my-docker-hub:5000/'; \
+       echo '</VirtualHost>'; \
+     ) > /etc/apache2/conf.d/10.rproxy.my-docker-hub \
+  && echo .
+
+EXPOSE 80 443

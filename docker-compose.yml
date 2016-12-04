@@ -1,3 +1,7 @@
+#
+# http://deeeet.com/writing/2014/10/02/docker-private-registry-auth/
+#
+
 version: '2'
 
 #volumes:
@@ -7,12 +11,15 @@ version: '2'
 services:
 
   rproxy:
-    image: jwilder/nginx-proxy:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.rproxy
+    image: rproxy
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+#    volumes:
+#      - /var/run/docker.sock:/tmp/docker.sock:ro
 
   my-docker-hub:
     image: registry
@@ -20,7 +27,7 @@ services:
       - STORAGE_PATH=/registry
       - VIRTUAL_HOST=my-docker-hub
     expose:
-      - "5000:5000"
+      - "5000"
     volumes:
       - ./data:/registry
 
