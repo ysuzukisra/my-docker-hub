@@ -1,0 +1,9 @@
+FROM ubuntu
+
+RUN set -x \
+  && apt-get update \
+  && apt-get install -y apache2-utils openssl vim curl \
+  && echo done.
+
+ENTRYPOINT /bin/bash
+CMD -c tail -f /dev/null

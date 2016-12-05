@@ -12,14 +12,14 @@ services:
 
   rproxy:
     build:
-      context: .
-      dockerfile: Dockerfile.rproxy
+      context: ./rproxy
+      dockerfile: Dockerfile
     image: rproxy
     ports:
       - "80:80"
       - "443:443"
-#    volumes:
-#      - /var/run/docker.sock:/tmp/docker.sock:ro
+    volumes:
+      - ./auth:/auth
 
   my-docker-hub:
     image: registry
@@ -31,5 +31,45 @@ services:
     volumes:
       - ./data:/registry
 
-  test:
-    image: ubuntu
+  auth-utils:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth-utils
+    image: auth-utils
+    volumes_from:
+      - rproxy
+    #
+    # http://deeeet.com/writing/2014/10/02/docker-private-registry-auth/
+    #
+    # # htpasswdの設定
+    #
+    # docker-compose exec auth-utils
+    # cd /auth
+    # touch htpasswd.dat
+    # htpasswd -b htpasswd.dat USER PASSWD
+    #
+    # # CAの秘密鍵と公開鍵を作成
+    # 
+    # echo 01 > ca.srl
+    # openssl genrsa -des3 -out ca-key.pem 2048
+    #    (Enter pass phrase for ca-key.pem:)
+    # openssl req -new -x509 -days 365 -key ca-key.pem -out ca.pem
+    #    Country Name (2 letter code) [AU]:JP
+    #    State or Province Name (full name) [Some-State]:
+    #    Locality Name (eg, city) []:
+    #    Organization Name (eg, company) [Internet Widgits Pty Ltd]:XXXXX
+    #    Organizational Unit Name (eg, section) []:
+    #    Common Name (e.g. server FQDN or YOUR name) []:
+    #    Email Address []:
+    # 
+    # # このCAを使ってサーバーの秘密鍵と証明書（CRT）を作成
+    # 
+    # openssl genrsa -des3 -out site-ssl.key 2048
+    #   (Enter pass phrase for site-ssl.key:)
+    # openssl req -subj '/CN=my-docker-hub' -new -key site-ssl.key -out site-ssl.csr
+    # openssl x509 -req -days 3650 -in site-ssl.csr -CA ca.pem -CAkey ca-key.pem -out site-ssl.crt
+    # 
+    # # パスフレーズは削除しておく
+    # 
+    # openssl rsa -in site-ssl.key -out site-ssl.key
+
